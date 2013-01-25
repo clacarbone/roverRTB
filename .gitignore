@@ -1,0 +1,8 @@
+`find . -name "*pb*"`
+`find . -name "*.dep*"`
+`find . -name "*~*"`
+/lib
+/bin
+/build
+/dist
+/nbproject
