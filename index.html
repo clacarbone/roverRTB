@@ -44,13 +44,23 @@ Next step is polishing up the code, reducing the sources and separating debug an
 <h3>ASSUMPTIONS</h3>
 
 <p>A controlling C thread calling methods of this library in a pre-determined way.
-Anything having to do with timings and/or granularity <a href="#%20Support%20or%20Contact">test</a></p>
+Anything having to do with timings and/or granularity is completely under control of the calling thread.
+No timers or other features are implemented by this library.
+Also it is assumed that the calling thread is able to provide the library with certain information:</p>
 
-<h3>Workings</h3>
+<ul>
+<li>position as a couple of FP values (either Cartesian or Lat/Lon)</li>
+<li>heading as a single FP value (degrees true north)</li>
+</ul><h3>Workings</h3>
 
-<p>The library assumes the controlling thread</p>
+<p>The library provides for</p>
 
-<h3>Welcome to GitHub Pages.</h3>
+<ul>
+<li>storing sequential positions discarding already saved sequences (loop elimination)</li>
+<li>backing up data to files (to be implemented)</li>
+<li>heading to next target point until origin is reached</li>
+<li>obstacle avoidance through laser scans</li>
+</ul><h3>Welcome to GitHub Pages.</h3>
 
 <p>This automatic page generator is the easiest way to create beautiful pages for all of your projects. Author your page content here using GitHub Flavored Markdown, select a template crafted by a designer, and publish. After your page is generated, you can check out the new branch:</p>
 
