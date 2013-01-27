@@ -12,4 +12,7 @@ Makefile
 `find . -name "~"`
 options.h
 output.h
+service.h
 `find . -name "*player*"`
+`find . -name "*time_deci*"`
+data.csv
