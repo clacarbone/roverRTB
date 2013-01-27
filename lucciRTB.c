@@ -1,12 +1,15 @@
 #define local_offset 2.0
 #define local_pi_2   1.570796327 //    3.14159265358979323846
+
+#if (SIMUL == 1)
 #include <player-3.1/libplayerc/playerc.h>
-#include <sys/param.h>
 #include "player_manager.h"
+extern playerc_position2d_t *PlayerLocalPosition2dRelative;
+#endif
 
 #include "lucciRTB.h"
 #include "lucciPLAN.h"
-extern playerc_position2d_t *PlayerLocalPosition2dRelative;
+
 
 #if (RTB_GEO_MODE == RTB_GEO_MODE_EUCLIDEAN)
 
@@ -122,6 +125,7 @@ void RTB_internal_flush(RTB_FLOAT_TYPE localx, RTB_FLOAT_TYPE localy)
             RTB_internal_point_last->next=NULL;
 
             //REFRESH PLAYER/STAGE POINTS
+#if (SIMUL == 1)
             {
                 playerc_graphics2d_clear(PlayerLocalGraphics2D);
                 player_point_2d_t points[4];
@@ -182,6 +186,7 @@ void RTB_internal_flush(RTB_FLOAT_TYPE localx, RTB_FLOAT_TYPE localy)
                 points[3].py=-0.5+local_point->y+local_offset;                
                 playerc_graphics2d_draw_polygon(PlayerLocalGraphics2D,points,4,1,color);
             }
+#endif
         }
         else
         {
@@ -199,7 +204,9 @@ void RTB_update(RTB_FLOAT_TYPE localx, RTB_FLOAT_TYPE localy, RTB_FLOAT_TYPE xsp
         case RTB_recording:
             if (RTB_internal_point_start==NULL)
             {
+#if (DEBUG == 1)
                 printf("Actual x and y: %3.2f  -  %3.2f\n",localx,localy);
+#endif
                 RTB_internal_point_start = malloc(sizeof(RTB_point));
                 RTB_internal_point_start->x=localx;
                 RTB_internal_point_start->y=localy;
@@ -208,7 +215,7 @@ void RTB_update(RTB_FLOAT_TYPE localx, RTB_FLOAT_TYPE localy, RTB_FLOAT_TYPE xsp
                 RTB_internal_point_start->previous=NULL;
                 RTB_internal_point_last = RTB_internal_point_start;
                 RTB_internal_counter++;
-                
+#if (SIMUL == 1)                
                 /* graphic helpers drawing*/
                 player_point_2d_t points[4];
                 player_color_t color;
@@ -239,7 +246,7 @@ void RTB_update(RTB_FLOAT_TYPE localx, RTB_FLOAT_TYPE localy, RTB_FLOAT_TYPE xsp
                 points[3].px=0+RTB_internal_point_start->x;
                 points[3].py=-1.5+RTB_internal_point_start->y+local_offset;                
                 playerc_graphics2d_draw_polygon(PlayerLocalGraphics2D,points,4,1,color);
-                
+#endif             
                 //return &RTBstatus;
             }
 
@@ -258,6 +265,7 @@ void RTB_update(RTB_FLOAT_TYPE localx, RTB_FLOAT_TYPE localy, RTB_FLOAT_TYPE xsp
                 RTB_internal_point_last->y=localy;
                 RTB_internal_point_last->distance_from_start=RTB_internal_distance;
                 RTB_internal_counter++;
+#if (SIMUL == 1)
                 player_color_t color;
                 color.blue=255;
                 color.green=30;
@@ -273,7 +281,7 @@ void RTB_update(RTB_FLOAT_TYPE localx, RTB_FLOAT_TYPE localy, RTB_FLOAT_TYPE xsp
                 points[3].px=0.5+localx;
                 points[3].py=-0.5+localy+local_offset;                
                 playerc_graphics2d_draw_polygon(PlayerLocalGraphics2D,points,4,1,color);
-
+#endif (SIMUL == 1)
 
             }
             RTB_internal_flush(localx,localy);
@@ -331,6 +339,7 @@ void RTB_update(RTB_FLOAT_TYPE localx, RTB_FLOAT_TYPE localy, RTB_FLOAT_TYPE xsp
                 RTB_internal_point_last->y=localy;
                 RTB_internal_point_last->distance_from_start=RTB_internal_distance;
                 RTB_internal_counter++;
+#if (SIMUL == 1)                
                 player_color_t color;
                 color.blue=255;
                 color.green=30;
@@ -346,7 +355,7 @@ void RTB_update(RTB_FLOAT_TYPE localx, RTB_FLOAT_TYPE localy, RTB_FLOAT_TYPE xsp
                 points[3].px=0.5+localx;
                 points[3].py=-0.5+localy+local_offset;                
                 playerc_graphics2d_draw_polygon(PlayerLocalGraphics2D,points,4,1,color);
-
+#endif
 
             }
             RTB_internal_flush(localx,localy);
@@ -375,19 +384,23 @@ void RTB_update(RTB_FLOAT_TYPE localx, RTB_FLOAT_TYPE localy, RTB_FLOAT_TYPE xsp
                     RTBstatus.control_vector = lucciSERVICE_vect_normalize(RTBstatus.control_vector);
                     RTBstatus.control_values.heading=0;
                     RTBstatus.control_values.speed=0;
+#if (DEBUG == 1)                    
                     printf("Origin reached\n");
+#endif
                     return;
             }
             if (RTB_internal_getdistance(localx,localy,RTB_internal_point_actual->previous->x,RTB_internal_point_actual->previous->y) <= RTB_GUIDE_CHANGE_DIST_TRSH && RTB_internal_point_actual->previous != NULL)
             {
+#if (SIMUL == 1)
                 playerc_position2d_set_cmd_vel(PlayerLocalPosition2dRelative,0,0,0,1);
+#endif
                 RTB_internal_point_actual = RTB_internal_point_actual->previous;
             }
 
             if (RTB_internal_point_actual->next == NULL)
             {
                 
-                RTBstatus.control_vector = lucciPLAN_givedir(localx, localy, RTB_internal_point_actual->previous->x,RTB_internal_point_actual->previous->y);
+                RTBstatus.control_vector = lucciPLAN_givedir_multiparam(localx, localy, RTB_internal_point_actual->previous->x,RTB_internal_point_actual->previous->y);
                 distance = RTB_internal_getdistance(RTB_internal_point_actual->previous->x,RTB_internal_point_actual->previous->y,RTB_internal_point_actual->x,RTB_internal_point_actual->y);
                 if (distance < 2.0)
                     RTBstatus.control_vector = lucciSERVICE_vect_set_norm(0.4,RTBstatus.control_vector);
@@ -400,7 +413,7 @@ void RTB_update(RTB_FLOAT_TYPE localx, RTB_FLOAT_TYPE localy, RTB_FLOAT_TYPE xsp
             {
                 if (RTB_internal_getdistance(RTB_internal_point_actual->previous->x,RTB_internal_point_actual->previous->y,RTB_internal_point_actual->x,RTB_internal_point_actual->y) < 2.0)
                 {
-                    RTBstatus.control_vector = lucciSERVICE_vect_set_norm(0.4,lucciPLAN_givedir(localx, localy, RTB_internal_point_actual->previous->x,RTB_internal_point_actual->previous->y));
+                    RTBstatus.control_vector = lucciSERVICE_vect_set_norm(0.4,lucciPLAN_givedir_multiparam(localx, localy, RTB_internal_point_actual->previous->x,RTB_internal_point_actual->previous->y));
                 }
                 else
                 {
@@ -417,7 +430,7 @@ void RTB_update(RTB_FLOAT_TYPE localx, RTB_FLOAT_TYPE localy, RTB_FLOAT_TYPE xsp
                     printf("Angle to dest %3.2f, correction angle %3.2f\n", RTBstatus.control_vector.angle_rad, angle);*/
                     //calcola l'orientamento necessario
                     
-                    RTBstatus.control_vector = lucciSERVICE_vect_set_norm(1.0,lucciPLAN_givedir(localx, localy, RTB_internal_point_actual->previous->x,RTB_internal_point_actual->previous->y));
+                    RTBstatus.control_vector = lucciSERVICE_vect_set_norm(1.0,lucciPLAN_givedir_multiparam(localx, localy, RTB_internal_point_actual->previous->x,RTB_internal_point_actual->previous->y));
                 }
 
                 

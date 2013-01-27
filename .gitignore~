@@ -10,6 +10,3 @@ Makefile
 `find . -name "*main*"`
 `find . -name "*cli*"`
 `find . -name "~"`
-options.h
-output.h
-`find . -name "*player*"`

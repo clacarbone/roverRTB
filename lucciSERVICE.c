@@ -28,10 +28,10 @@ RTB_FLOAT_TYPE lucciSERVICE_deg_adjust (RTB_FLOAT_TYPE angle)
     return angle;
 }
 
-vector lucciSERVICE_vect_normalize (vector data)
+RTBvector lucciSERVICE_vect_normalize (RTBvector data)
 {
     RTB_FLOAT_TYPE accum;
-    vector local = data;
+    RTBvector local = data;
     accum = sqrt(pow(data.x,2)+pow(data.y,2));
     local.x = data.x/accum;
     local.y = data.y/accum;
@@ -41,9 +41,9 @@ vector lucciSERVICE_vect_normalize (vector data)
     return local;    
 }
 
-vector lucciSERVICE_vect_sum (vector a, vector b)
+RTBvector lucciSERVICE_vect_sum (RTBvector a, RTBvector b)
 {
-    vector local;
+    RTBvector local;
     local.x = a.x + b.x;
     local.y = a.y + b.y;
     local.angle_rad = atan2(local.y,local.x);
@@ -51,9 +51,9 @@ vector lucciSERVICE_vect_sum (vector a, vector b)
     return lucciSERVICE_vect_normalize(local);
 }
 
-vector lucciSERVICE_vect_set_norm (RTB_FLOAT_TYPE norm, vector vect)
+RTBvector lucciSERVICE_vect_set_norm (RTB_FLOAT_TYPE norm, RTBvector vect)
 {
-    vector local = vect;
+    RTBvector local = vect;
     RTB_FLOAT_TYPE accum;
     if (vect.norm != 0)
     {

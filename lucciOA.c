@@ -1,10 +1,13 @@
+#if (SIMUL == 1)
 #include <player-3.1/libplayerc/playerc.h>
+extern playerc_graphics2d_t *PlayerLocalGraphicsMoving;
 
+#endif
 #include "lucciOA.h"
 FILE *output_pty;
 extern char mystr[];
 extern RTB_status RTBstatus;
-extern playerc_graphics2d_t *PlayerLocalGraphicsMoving;
+
 
 typedef struct OA_radial_map_t {
     unsigned int intensity;
@@ -13,7 +16,7 @@ typedef struct OA_radial_map_t {
 
 OA_radial_map_t *OA_radial_map;
 unsigned int **OA_map;
-int OA_map_size;
+int OA_map_size, OA_inited = 0;
 RTB_FLOAT_TYPE OA_internal_min_angle;
 int avoid_soft = 0, avoid_hard=0;
 unsigned int OA_radial_size;
@@ -23,7 +26,7 @@ unsigned int OA_radial_size;
 void OA_init (void)
 {
     long i,j;
-    OA_map_size = 2* OA_ACTIVE_DISTANCE / OA_GRID_RESOLUTION;
+    /*OA_map_size = 2* OA_ACTIVE_DISTANCE / OA_GRID_RESOLUTION;
     OA_map = malloc(OA_map_size * sizeof(unsigned int*));
     for (i=0; i<OA_map_size; i++)
         OA_map[i] = malloc(OA_map_size * sizeof(unsigned int));
@@ -31,7 +34,7 @@ void OA_init (void)
         for (j=0; j<OA_map_size; j++)
         {
             OA_map[i][j]=0;
-        }
+        }*/
     OA_internal_min_angle = OA_SENSOR_CENTER - OA_SENSOR_COUNT/2 * OA_SENSOR_RESOLUTION;
     OA_radial_size = (int)(360 / OA_GRID_RADIAL_SAMPLING);
     //OA_radial_map = (unsigned int *) malloc (OA_radial_size * sizeof(unsigned int));
@@ -42,6 +45,7 @@ void OA_init (void)
         OA_radial_map[i].validity=0;
     }
         //OA_radial_map[i]=0;
+    OA_inited = 1;
 }
 
 void OA_internal_map_update (void)
@@ -60,9 +64,19 @@ void OA_internal_map_update (void)
     }
 }
 
-vector OA_perform_avoidance (RTB_FLOAT_TYPE readings[], long count, RTB_FLOAT_TYPE yaw, vector desired_heading)
+RTBvector OA_perform_avoidance (RTB_FLOAT_TYPE readings[], long count, RTBvector yaw, RTBvector desired_heading)
 {
-    vector localvec,localvec2;
+    
+    RTBvector localvec,localvec2;
+    if (OA_inited == 0)
+    {
+        localvec.x=0;
+        localvec.y=0;
+        localvec.norm=0;
+        localvec.angle_deg_north=0;
+        localvec.angle_rad=M_PI_2;
+        return localvec;        
+    }
     RTB_FLOAT_TYPE angle, min_distance=50;
     long i,j;
     long index,angle_int;
@@ -87,7 +101,7 @@ vector OA_perform_avoidance (RTB_FLOAT_TYPE readings[], long count, RTB_FLOAT_TY
             angle = lucciSERVICE_rad_adjust(angle);
             if ((angle < M_PI_2) && (angle > -M_PI_2))
                 min_distance = MIN(min_distance, readings[i]);
-            angle = lucciSERVICE_rad_adjust(angle+yaw);
+            angle = lucciSERVICE_rad_adjust(angle+yaw.angle_rad);
             angle_int = 900-floor(angle/PI*1800);
             
             if (angle_int > 3600)
@@ -135,7 +149,7 @@ vector OA_perform_avoidance (RTB_FLOAT_TYPE readings[], long count, RTB_FLOAT_TY
         if (_validity_count > OA_WINDOW_SIZE)
             OA_radial_map[i].validity = 1;
     }
-    
+#if (DEBUG == 1)    
     //Radial discretization of the map
     output_pty = fopen("/home/erupter/data.csv","w+");
     //fprintf(output_pty,"START,");
@@ -149,7 +163,7 @@ vector OA_perform_avoidance (RTB_FLOAT_TYPE readings[], long count, RTB_FLOAT_TY
     {
         fprintf(output_pty,"%03d,",OA_radial_map[i].validity);
     }
-    
+#endif    
     
 //    len=sprintf(mystr,"START,");
 //    write(output_pty,mystr,len);
@@ -271,9 +285,9 @@ vector OA_perform_avoidance (RTB_FLOAT_TYPE readings[], long count, RTB_FLOAT_TY
                 index = i;
         }
 #if (OA_SENSOR_ORIENTATION == OA_SENSOR_CLOCKWISE)
-        angle = yaw + OA_SENSOR_CENTER + OA_internal_min_angle + (index*OA_SENSOR_RESOLUTION);
+        angle = yaw.angle_rad + OA_SENSOR_CENTER + OA_internal_min_angle + (index*OA_SENSOR_RESOLUTION);
 #elif (OA_SENSOR_ORIENTATION == OA_SENSOR_ANTI_CLOCKWISE)
-        angle = yaw + OA_SENSOR_CENTER - OA_internal_min_angle - (i*OA_SENSOR_RESOLUTION);   
+        angle = yaw.angle_rad + OA_SENSOR_CENTER - OA_internal_min_angle - (i*OA_SENSOR_RESOLUTION);   
 #endif
         angle = lucciSERVICE_rad_adjust(angle + M_PI);
         localvec2.x = cos (angle);

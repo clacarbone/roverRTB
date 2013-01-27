@@ -14,6 +14,7 @@ extern "C" {
 #include <math.h>
 #include <stdlib.h>
 #include <assert.h>
+#include <sys/param.h>
 #include "lucciSERVICE.h"
 
 
@@ -235,6 +236,10 @@ typedef struct RTB_point{
 #else
 #error ("No geo mode specified in lucciRTB.h")
 #endif
+
+#define DEBUG   0
+#define SIMUL   0
+
 #ifdef	__cplusplus
 }
 #endif

@@ -51,8 +51,8 @@ long button_interdiction[4];
     struct termios term;
     int output_pty;
     RTB_status RTBstatus;
-    vector dir;
-    extern vehicle_control control_values;
+    RTBvector dir;
+    extern RTBvehicle_control control_values;
     double actual_dir;
     float vel,turn,command_vel,command_turn;
     
@@ -103,7 +103,7 @@ int main(int argc, char** argv) {
     //RTB_set_mode(RTB_recording);
     OA_init();
     long counter,counter2;
-    vector localvec;
+    RTBvector localvec;
     RTBstatus.control_values.heading = 0;
     RTBstatus.control_values.speed = 0;
     player_point_2d_t points[4];
@@ -120,7 +120,7 @@ int main(int argc, char** argv) {
     if (!(SDL_Init(SDL_INIT_EVENTTHREAD | SDL_INIT_JOYSTICK) < 0))
     {
         if (SDL_NumJoysticks() > 1)
-            if(mystick = SDL_JoystickOpen(1) != NULL)
+            if (mystick = SDL_JoystickOpen(1) != NULL)
                 NoJoy = 0;
             else
                 NoJoy = 1;
@@ -205,7 +205,9 @@ int main(int argc, char** argv) {
                     points[2].px = 3*cos(-GlobalA+dir.angle_rad);
                     points[2].py = 3*sin(-GlobalA+dir.angle_rad);
                     //RTBstatus.control_values.speed = 2;
-                    RTBstatus.control_vector=OA_perform_avoidance(SensorData.ranges, SensorData.ranges_count,GlobalA,RTBstatus.control_vector);
+                    RTBvector yaw;
+                    yaw.angle_rad = GlobalA;
+                    RTBstatus.control_vector=OA_perform_avoidance(SensorData.ranges, SensorData.ranges_count,yaw,RTBstatus.control_vector);
                     //if(control_values.speed == 0)
 
 

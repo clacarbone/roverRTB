@@ -28,7 +28,7 @@ extern "C" {
 typedef struct {
     RTB_FLOAT_TYPE heading;
     RTB_FLOAT_TYPE speed;    
-} vehicle_control;
+} RTBvehicle_control;
 
 typedef struct {
     RTB_FLOAT_TYPE x;
@@ -36,7 +36,7 @@ typedef struct {
     RTB_FLOAT_TYPE angle_rad;
     RTB_FLOAT_TYPE angle_deg_north;
     RTB_FLOAT_TYPE norm;
-} vector;
+} RTBvector;
 
 /*! \brief RTB operating main mode enumeration
 *
@@ -65,20 +65,77 @@ typedef enum {
 typedef struct RTB_status {
     RTB_mode mode;                  /*!< RTB_mode depicting the state of the module. */ 
     int complete;                   /*!< Boolean showing if the module has reached the origin. */ 
-    vehicle_control control_values; /*!< struct holding command values */ 
+    RTBvehicle_control control_values; /*!< struct holding command values */ 
     RTB_FLOAT_TYPE distance;        /*!< Float value telling the system the distance to the origin. */ 
-    vector control_vector;          /*!< Vector holding the last control vector */
+    RTBvector control_vector;          /*!< Vector holding the last control vector */
 } RTB_status;
     
 
-
+/*! \brief Radians to Degrees North
+ *
+ *      
+ *  Converts a value in radians to degrees true north.
+ * @param angle          RTB_FLOAT_TYPE carrying the value to be modified
+ */
 RTB_FLOAT_TYPE lucciSERVICE_rad2degnorth(RTB_FLOAT_TYPE angle);
+
+/*! \brief Degrees North to Radians
+ *
+ *      
+ *  Converts a value in degrees true north to radians.
+ * @param angle          RTB_FLOAT_TYPE carrying the value to be modified
+ */
 RTB_FLOAT_TYPE lucciSERVICE_degnorth2rad(RTB_FLOAT_TYPE angle);
+
+/*! \brief Radians adjust
+ *
+ *      
+ *  Performs a sanity check on an angle in radians.
+ * Meaning it can't be less then -PI/2 or higher than +PI/2
+ * @param angle          RTB_FLOAT_TYPE carrying the value to be modified
+ */
 RTB_FLOAT_TYPE lucciSERVICE_rad_adjust(RTB_FLOAT_TYPE angle);
+
+/*! \brief Degrees adjust
+ *
+ *      
+ *  Performs a sanity check on an angle in degrees.
+ * Meaning it can't be less then 0° or higher than 359.9° (precision is up to the underlying value type)
+ * @param angle          RTB_FLOAT_TYPE carrying the value to be modified
+ */
 RTB_FLOAT_TYPE lucciSERVICE_deg_adjust(RTB_FLOAT_TYPE angle);
-vector lucciSERVICE_vect_normalize (vector data);
-vector lucciSERVICE_vect_sum (vector a, vector b);
-vector lucciSERVICE_vect_set_norm (RTB_FLOAT_TYPE norm, vector vect);
+
+/*! \brief Vector normalize
+ *
+ *      
+ *  Useful after mathematical operations concerning X/Y values: recalculates the norm and makes the angle
+ * values coherent with the vector values.
+ * @param vector          RTBvector carrying the value to be modified
+ */
+RTBvector lucciSERVICE_vect_normalize (RTBvector data);
+
+/*! \brief Vector sum
+ *
+ *  Performs the sum between two vectors.   
+ * Emphasis is on the X/Y values, norm and angles are calculated afterwards.
+ * Thus summing vectors with missing X/Y values will result in undefined behaviour.
+ * 
+ * @param vector A      RTBvector carrying operand A
+ * @param vector B      RTBvector carrying operand B
+ */
+RTBvector lucciSERVICE_vect_sum (RTBvector a, RTBvector b);
+
+/*! \brief Vector set norm
+ *
+ *      
+ *  Arbitrarily set the norm of a vector. Useful to modify the speed should
+ * it be connected with the length of the vector. 
+ * Vector value must be fully qualified: both X and Y together with current NORM must be coherent values.
+ * Angles get recalculated on the fly.
+ * @param norm          RTB_FLOAT_TYPE carrying the new norm
+ * @param vector        RTBvector carrying the vector to be modified
+ */
+RTBvector lucciSERVICE_vect_set_norm (RTB_FLOAT_TYPE norm, RTBvector vect);
 
 #ifdef	__cplusplus
 }
