@@ -1,5 +1,5 @@
-/* 
- * File:   lucciPLAN.h
+/** 
+ * \file   lucciPLAN.h
  * Author: erupter
  *
  * Created on November 2, 2012, 2:41 PM
@@ -16,9 +16,11 @@ extern "C" {
 #include "lucciSERVICE.h"
 #include <math.h>
 
-/*! \brief Plan calculate new direction
+    /** \defgroup Plan */
+    
+/** \brief Plan calculate new direction
  *
- *      
+ * \ingroup Plan
  *  Calculates the direction towards the next waypoint given the actual position.
  * @param dest          RTBvector with the destination vector
  * @param actual        RTBvector with the actual position vector
@@ -26,9 +28,9 @@ extern "C" {
  */    
 RTBvector lucciPLAN_givedir(RTBvector dest, RTBvector actual);
 
-/*! \brief Plan calculate new direction (4 param version
+/** \brief Plan calculate new direction (4 param version
  *
- *      
+ * \ingroup Plan      
  *  Calculates the direction towards the next waypoint given the actual position.
  * @param actualx       RTBvector with the actual position X component
  * @param actualy       RTBvector with the actual position Y component
